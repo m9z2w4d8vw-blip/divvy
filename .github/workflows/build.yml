@@ -1,39 +1,46 @@
+
 name: Build rootless divvy .deb
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 40
+
     env:
       THEOS: ${{ github.workspace }}/theos
+
     steps:
       - name: Check out divvy
         uses: actions/checkout@v4
 
-      # Modern Xcode/ld64 on macOS is needed for iOS 14+ arm64e ABI.
       - name: Install Theos and signer
         shell: bash
         run: |
           set -euo pipefail
           brew list ldid >/dev/null 2>&1 || brew install ldid
-          git clone --depth 1 --recurse-submodules https://github.com/theos/theos.git "$THEOS"
+          git clone --depth 1 --recurse-submodules \
+            https://github.com/theos/theos.git "$THEOS"
 
       - name: Install iPhoneOS 16.5 SDK
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$THEOS/sdks"
-          curl --fail --location --retry 3 --output "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" \
+          curl --fail --location --retry 3 \
+            --output "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" \
             https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz
-          tar -xJf "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" -C "$THEOS/sdks"
+          tar -xJf "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" \
+            -C "$THEOS/sdks"
           test -f "$THEOS/sdks/iPhoneOS16.5.sdk/SDKSettings.plist"
 
       - name: Build and package
@@ -50,3 +57,23 @@ jobs:
           path: packages/*.deb
           if-no-files-found: error
           retention-days: 30
+
+      - name: Compute release tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: release_tag
+        shell: bash
+        run: |
+          echo "tag=v-${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release with .deb
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: divvy ${{ steps.release_tag.outputs.tag }}
+          files: packages/*.deb
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
