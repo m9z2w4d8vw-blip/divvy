@@ -2,6 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- No extra entitlements are needed for the hook-free placeholder. -->
+    <!-- No additional entitlements are declared by this experimental build. -->
 </dict>
 </plist>

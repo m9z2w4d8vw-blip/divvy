@@ -4,10 +4,10 @@ TARGET = iphone:clang:16.5:15.0
 
 TWEAK_NAME = divvy
 
-# A hook-free skeleton until live network snapshots identify safe hook targets.
+# Experimental NAT-interface redirect for a specifically identified iOS 17.0 misd build.
 divvy_FILES = Tweak.x
 divvy_CFLAGS = -fobjc-arc
-# The filter is restricted to SpringBoard while this is a scaffold.
+# Injection is restricted to misd by divvy.plist.
 # ElleKit supplies libellekit.dylib on the rootless Dopamine filesystem.
 # The text stub under vendor/ellekit is for linking, not bundled in the .deb.
 divvy_LIBRARIES = ellekit

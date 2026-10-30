@@ -31,10 +31,12 @@ $diffPath   = Join-Path $OutputDirectory 'wifi_diff.txt'
 # One SSH session per snapshot. No scripts, settings, or temporary files are
 # created on the phone. The markers delimit the four requested commands.
 $remote = @'
-printf '\n===== IFCONFIG =====\n'; ifconfig -a 2>&1
-printf '\n===== NETSTAT =====\n'; netstat -rn -f inet 2>&1
-printf '\n===== ROUTE =====\n'; route -n get default 2>&1
-printf '\n===== FORWARDING =====\n'; sysctl net.inet.ip.forwarding 2>&1
+printf '\n===== IFCONFIG =====\n'; /var/jb/sbin/ifconfig -a 2>&1
+/var/jb/sbin/ifconfig ap1 2>&1 || echo "ap1 not present"
+/var/jb/sbin/ifconfig bridge100 2>&1 || echo "bridge100 not present"
+printf '\n===== NETSTAT =====\n'; /var/jb/usr/sbin/netstat -rn -f inet 2>&1
+printf '\n===== ROUTE =====\n'; /var/jb/sbin/route -n get default 2>&1
+printf '\n===== FORWARDING =====\n'; /var/jb/usr/sbin/sysctl net.inet.ip.forwarding 2>&1
 printf '\n===== END =====\n'
 '@
 $remote = $remote -replace "`r", ''
