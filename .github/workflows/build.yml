@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 40
     env:
-      THEOS: ${{ runner.temp }}/theos
+      THEOS: ${{ github.workspace }}/theos
     steps:
       - name: Check out divvy
         uses: actions/checkout@v4
