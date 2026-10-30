@@ -1,9 +1,0 @@
-Package: com.parv.divvy
-Name: divvy
-Version: 0.1.0
-Architecture: iphoneos-arm64
-Description: Experimental Wi-Fi upstream NAT hook for Personal Hotspot
-Maintainer: Parv
-Author: Parv
-Section: Tweaks
-Depends: firmware (>= 15.0), ellekit
