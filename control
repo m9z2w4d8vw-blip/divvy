@@ -1,0 +1,9 @@
+Package: com.parv.divvy
+Name: divvy
+Version: 0.0.1
+Architecture: iphoneos-arm64
+Description: Share Wi-Fi upstream through Personal Hotspot
+Maintainer: Parv
+Author: Parv
+Section: Tweaks
+Depends: firmware (>= 15.0), ellekit

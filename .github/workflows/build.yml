@@ -1,0 +1,52 @@
+name: Build rootless divvy .deb
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      THEOS: ${{ runner.temp }}/theos
+    steps:
+      - name: Check out divvy
+        uses: actions/checkout@v4
+
+      # Modern Xcode/ld64 on macOS is needed for iOS 14+ arm64e ABI.
+      - name: Install Theos and signer
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list ldid >/dev/null 2>&1 || brew install ldid
+          git clone --depth 1 --recurse-submodules https://github.com/theos/theos.git "$THEOS"
+
+      - name: Install iPhoneOS 16.5 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$THEOS/sdks"
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" \
+            https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz
+          tar -xJf "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" -C "$THEOS/sdks"
+          test -f "$THEOS/sdks/iPhoneOS16.5.sdk/SDKSettings.plist"
+
+      - name: Build and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          make clean package FINALPACKAGE=1
+          find packages -maxdepth 1 -type f -name '*.deb' -print
+
+      - name: Upload Debian build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: divvy-rootless-deb
+          path: packages/*.deb
+          if-no-files-found: error
+          retention-days: 30
